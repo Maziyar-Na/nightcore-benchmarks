@@ -12,4 +12,4 @@ for qps in $ALL_QPS; do
     $BASE_DIR/run_once.sh qps${qps} $qps
 done
 
-$HELPER_SCRIPT stop-machines
+# $HELPER_SCRIPT stop-machines

@@ -6,7 +6,8 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 EXP_DIR = os.path.join(SCRIPT_DIR, '../experiments')
 
-WORKLOADS = ['socialnetwork', 'moviereview', 'hotelresv', 'hipstershop']
+# WORKLOADS = ['socialnetwork', 'moviereview', 'hotelresv', 'hipstershop']
+WORKLOADS = ['hipstershop']
 RESULT_DIR = 'results'
 
 def lstrip(s, prefix):
@@ -45,6 +46,7 @@ def print_results(dir_name, title, prefix=''):
             wrk_outputs = parse_wrk_output(os.path.join(dir_path, exp_dir, 'wrk.log'))
             qps_str = lstrip(exp_dir, prefix)
             assert qps_str.startswith('qps')
+            print("[dbg] print_results: wrk_output read: ", wrk_outputs)
             results[int(lstrip(qps_str, 'qps'))] = (wrk_outputs['median'], wrk_outputs['tail'])
     sys.stdout.write('[%s]\nQPS\tmedian\ttail\n' % (title,))
     for key in sorted(results.keys()):
@@ -62,6 +64,6 @@ if __name__ == '__main__':
                           prefix='mixed_')
         else:
             print_results(dir_name, title='%s (single node)' % (workload,))
-    for workload in WORKLOADS:
-        dir_name = '%s_4node' % (workload,)
-        print_results(dir_name, title='%s (single node)' % (workload,))
+#    for workload in WORKLOADS:
+#        dir_name = '%s_4node' % (workload,)
+#        print_results(dir_name, title='%s (single node)' % (workload,))

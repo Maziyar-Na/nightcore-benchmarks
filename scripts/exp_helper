@@ -141,6 +141,24 @@ def start_spot_instances(machine_configs, waiting_time):
         raise e
     return results
 
+def get_cloudlab_instances(machine_configs):
+    results = {}
+    for name, config in machine_configs.items():
+        try:
+            machine_info = {}
+            machine_info['instance_id'] = config['instance_id']
+            machine_info['dns'] = config['dns']
+            machine_info['ip'] = config['ip']
+            machine_info['role'] = config['role']
+            if 'labels' in config:
+                machine_info['labels'] = config['labels']
+            results[name] = machine_info
+        except Exception as e:
+            print("[ERROR] Getting cloudlab instances failed!")
+            raise e
+    print("[dbg] get_cloudlab_instances: results: ", results)
+    return results
+
 def setup_hostname_for_machines(machine_infos):
     for name, machine_info in machine_infos.items():
         run_remote_command(machine_info['dns'], ['sudo', 'hostnamectl', 'set-hostname', name])
@@ -153,12 +171,12 @@ def setup_docker_swarm_for_machines(machine_infos):
                 raise Exception('More than one manager machine')
             run_remote_command(
                 machine_info['dns'],
-                ['docker', 'swarm', 'init', '--advertise-addr', machine_info['ip']])
+                ['sudo', 'docker', 'swarm', 'init', '--advertise-addr', machine_info['ip']])
             time.sleep(10)
             manager_machine = name
             join_token, _ = run_remote_command(
                 machine_info['dns'],
-                ['docker', 'swarm', 'join-token', '-q', 'worker'])
+                ['sudo', 'docker', 'swarm', 'join-token', '-q', 'worker'])
             join_token = join_token.strip()
     if manager_machine is None:
         raise Exception('No manager machine')
@@ -166,34 +184,37 @@ def setup_docker_swarm_for_machines(machine_infos):
         if machine_info['role'] == 'worker':
             run_remote_command(
                 machine_info['dns'],
-                ['docker', 'swarm', 'join', '--token', join_token,
+                ['sudo', 'docker', 'swarm', 'join', '--token', join_token,
                  machine_infos[manager_machine]['ip']+':2377'])
     time.sleep(10)
     for name, machine_info in machine_infos.items():
         if 'labels' in machine_info:
-            cmd = ['docker', 'node', 'update']
+            cmd = ['sudo', 'docker', 'node', 'update']
             for label_str in machine_info['labels']:
                 cmd.extend(['--label-add', label_str])
             cmd.append(name)
             run_remote_command(machine_infos[manager_machine]['dns'], cmd)
 
 def start_machines_main(base_dir, use_spot_instances,
-                        spot_instances_waiting_time):
+                        spot_instances_waiting_time, use_cloudlab_instances):
     if os.path.exists(os.path.join(base_dir, 'machines.json')):
         raise Exception('Machines already started')
-    with open(os.path.join(base_dir, 'config.json')) as fin:
+    with open(os.path.join(base_dir, 'config.json' if not use_cloudlab_instances else 'cloudlabConfig.json')) as fin:
         config = json.load(fin)
     if use_spot_instances:
         machine_infos = start_spot_instances(
             config['machines'], spot_instances_waiting_time)
+    elif use_cloudlab_instances:
+        machine_infos = get_cloudlab_instances(config['machines'])
     else:
         machine_infos = start_instances(config['machines'])
     try:
         time.sleep(60)
-        setup_hostname_for_machines(machine_infos)
-        setup_docker_swarm_for_machines(machine_infos)
+        # setup_hostname_for_machines(machine_infos)
+        # setup_docker_swarm_for_machines(machine_infos)
         with open(os.path.join(base_dir, 'machines.json'), 'w') as fout:
             json.dump(machine_infos, fout, indent=4, sort_keys=True)
+        print("[dbg] start_machines_main ended! SUCCESSFULLY!")
     except Exception as e:
         stop_instances(machine_infos)
         raise e
@@ -203,7 +224,8 @@ def stop_machines_main(base_dir):
         raise Exception('Machines not started')
     with open(os.path.join(base_dir, 'machines.json')) as fin:
         machine_infos = json.load(fin)
-    stop_instances(machine_infos)
+    # [Cloudlab-Specific] we don't have Amazon instances to stop them
+    # stop_instances(machine_infos)
     os.remove(os.path.join(base_dir, 'machines.json'))
 
 def generate_docker_compose_main(base_dir):
@@ -233,7 +255,7 @@ def get_host_main(base_dir, machine_name):
         machine_infos = json.load(fin)
     print(machine_infos[machine_name]['dns'])
 
-def get_service_host_main(base_dir, service_name):
+def get_service_host_main(base_dir, service_name, is_ip):
     if not os.path.exists(os.path.join(base_dir, 'machines.json')):
         raise Exception('Machines not started')
     with open(os.path.join(base_dir, 'config.json')) as fin:
@@ -241,7 +263,11 @@ def get_service_host_main(base_dir, service_name):
     with open(os.path.join(base_dir, 'machines.json')) as fin:
         machine_infos = json.load(fin)
     machine = config['services'][service_name]['placement']
-    print(machine_infos[machine]['dns'])
+    # [CLOUDLAB] For cloudlab we use the private ip directly
+    if not is_ip:
+        print(machine_infos[machine]['dns'])
+    else:
+        print(machine_infos[machine]['ip'])
 
 def get_docker_manager_host_main(base_dir):
     if not os.path.exists(os.path.join(base_dir, 'machines.json')):
@@ -296,10 +322,10 @@ def get_container_id_main(base_dir, service_name, machine_name):
         machine_name = config['services'][service_name]['placement']
     machine_info = machine_infos[machine_name]
     short_id, _ = run_remote_command(machine_info['dns'],
-                                     ['docker', 'ps', '-q', '-f', 'name='+service_name])
+                                     ['sudo', 'docker', 'ps', '-q', '-f', 'name='+service_name])
     short_id = short_id.strip()
     if short_id != '':
-        container_info, _ = run_remote_command(machine_info['dns'], ['docker', 'inspect', short_id])
+        container_info, _ = run_remote_command(machine_info['dns'], ['sudo', 'docker', 'inspect', short_id])
         container_info = json.loads(container_info)[0]
         print(container_info['Id'])
 
@@ -312,11 +338,11 @@ def collect_container_logs_main(base_dir, log_path):
     for machine_info in machine_infos.values():
         if machine_info['role'] == 'client':
             continue
-        container_ids, _ = run_remote_command(machine_info['dns'], ['docker', 'ps', '-q'])
+        container_ids, _ = run_remote_command(machine_info['dns'], ['sudo', 'docker', 'ps', '-q'])
         container_ids = container_ids.strip().split()
         for container_id in container_ids:
             container_info, _ = run_remote_command(
-                machine_info['dns'], ['docker', 'inspect', container_id])
+                machine_info['dns'], ['sudo', 'docker', 'inspect', container_id])
             container_info = json.loads(container_info)[0]
             container_name = container_info['Name'][1:]  # remove prefix '/'
             log_stdout, log_stderr = run_remote_command(
@@ -333,14 +359,16 @@ if __name__ == '__main__':
     parser.add_argument('--machine-name', type=str, default=None)
     parser.add_argument('--machine-label', type=str, default=None)
     parser.add_argument('--service', type=str, default=None)
+    parser.add_argument('--ip', type=str, default=None)
     parser.add_argument('--use-spot-instances', action='store_true')
+    parser.add_argument('--use-cloudlab-instances', action='store_false')
     parser.add_argument('--spot-instances-waiting-time', type=int, default=3)
     parser.add_argument('--log-path', type=str, default=None)
     args = parser.parse_args()
     try:
         if args.cmd == 'start-machines':
             start_machines_main(args.base_dir, args.use_spot_instances,
-                                args.spot_instances_waiting_time)
+                                args.spot_instances_waiting_time, args.use_cloudlab_instances)
         elif args.cmd == 'stop-machines':
             stop_machines_main(args.base_dir)
         elif args.cmd == 'generate-docker-compose':
@@ -348,7 +376,7 @@ if __name__ == '__main__':
         elif args.cmd == 'get-host':
             get_host_main(args.base_dir, args.machine_name)
         elif args.cmd == 'get-service-host':
-            get_service_host_main(args.base_dir, args.service)
+            get_service_host_main(args.base_dir, args.service, args.ip)
         elif args.cmd == 'get-docker-manager-host':
             get_docker_manager_host_main(args.base_dir)
         elif args.cmd == 'get-client-host':

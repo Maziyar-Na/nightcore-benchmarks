@@ -1,0 +1,30 @@
+{
+    "machines": {
+        "nightcore-hs-middle": { "instance_id": "11", "role": "manager", "dns": "maziyar@apt126.apt.emulab.net", "ip": "10.10.1.1" },
+        "nightcore-hs-mongodb": { "instance_id": "22", "role": "worker", "dns": "maziyar@apt123.apt.emulab.net", "ip": "10.10.1.2" },
+        "nightcore-hs-cache": { "instance_id": "33", "role": "worker", "dns": "maziyar@apt122.apt.emulab.net", "ip": "10.10.1.3" },
+        "nightcore-hs-front": { "instance_id": "44", "role": "worker", "dns": "maziyar@apt128.apt.emulab.net", "ip": "10.10.1.5" },
+        "nightcore-hs-client": { "instance_id": "55", "role": "client", "dns": "maziyar@apt127.apt.emulab.net", "ip": "10.10.1.4" }
+    },
+    "services": {
+        "frontend-api-home": { "placement": "nightcore-hs-middle" },
+        "frontend-api-product": { "placement": "nightcore-hs-middle" },
+        "frontend-api-view-cart": { "placement": "nightcore-hs-middle" },
+        "frontend-api-add-to-cart": { "placement": "nightcore-hs-middle" },
+        "frontend-api-checkout": { "placement": "nightcore-hs-middle" },
+        "productcatalog-service": { "placement": "nightcore-hs-middle" },
+        "shipping-service": { "placement": "nightcore-hs-middle" },
+        "checkout-service": { "placement": "nightcore-hs-middle" },
+        "currency-service": { "placement": "nightcore-hs-middle" },
+        "payment-service": { "placement": "nightcore-hs-middle" },
+        "recommendation-service": { "placement": "nightcore-hs-middle" },
+        "ad-service": { "placement": "nightcore-hs-middle" },
+        "cart-service": { "placement": "nightcore-hs-middle" },
+        "cart-redis": { "placement": "nightcore-hs-cache" },
+        "productcatalog-redis": { "placement": "nightcore-hs-cache" },
+        "ad-redis": { "placement": "nightcore-hs-cache" },
+        "hipstershop-mongodb": { "placement": "nightcore-hs-mongodb" },
+        "nightcore-engine": { "placement": "nightcore-hs-middle" },
+        "nightcore-gateway": { "placement": "nightcore-hs-front" }
+    }
+}
