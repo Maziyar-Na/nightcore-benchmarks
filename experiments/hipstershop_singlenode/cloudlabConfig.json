@@ -1,10 +1,10 @@
 {
     "machines": {
-        "nightcore-hs-middle": { "instance_id": "11", "role": "manager", "dns": "maziyar@apt126.apt.emulab.net", "ip": "10.10.1.1" },
-        "nightcore-hs-mongodb": { "instance_id": "22", "role": "worker", "dns": "maziyar@apt123.apt.emulab.net", "ip": "10.10.1.2" },
-        "nightcore-hs-cache": { "instance_id": "33", "role": "worker", "dns": "maziyar@apt122.apt.emulab.net", "ip": "10.10.1.3" },
-        "nightcore-hs-front": { "instance_id": "44", "role": "worker", "dns": "maziyar@apt128.apt.emulab.net", "ip": "10.10.1.5" },
-        "nightcore-hs-client": { "instance_id": "55", "role": "client", "dns": "maziyar@apt127.apt.emulab.net", "ip": "10.10.1.4" }
+        "nightcore-hs-middle": { "instance_id": "11", "role": "worker", "dns": "maziyar@apt019.apt.emulab.net", "ip": "10.10.1.1" },
+        "nightcore-hs-mongodb": { "instance_id": "22", "role": "worker", "dns": "maziyar@apt038.apt.emulab.net", "ip": "10.10.1.2" },
+        "nightcore-hs-cache": { "instance_id": "33", "role": "worker", "dns": "maziyar@apt025.apt.emulab.net", "ip": "10.10.1.3" },
+        "nightcore-hs-front": { "instance_id": "44", "role": "manager", "dns": "maziyar@apt040.apt.emulab.net", "ip": "10.10.1.5" },
+        "nightcore-hs-client": { "instance_id": "55", "role": "client", "dns": "maziyar@apt017.apt.emulab.net", "ip": "10.10.1.4" }
     },
     "services": {
         "frontend-api-home": { "placement": "nightcore-hs-middle" },

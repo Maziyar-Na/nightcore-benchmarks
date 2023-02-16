@@ -228,8 +228,10 @@ def stop_machines_main(base_dir):
     # stop_instances(machine_infos)
     os.remove(os.path.join(base_dir, 'machines.json'))
 
-def generate_docker_compose_main(base_dir):
-    with open(os.path.join(base_dir, 'config.json')) as fin:
+def generate_docker_compose_main(base_dir, use_cloudlab_instances):
+    configFile = 'config.json' if not use_cloudlab_instances else 'cloudlabConfig.json'
+    print("[dbg] config file for cloudlab: ", configFile)
+    with open(os.path.join(base_dir, configFile)) as fin:
         config = json.load(fin)
     docker_compose = { 'version': '3.8', 'services': {} }
     for name, service_config in config['services'].items():
@@ -255,10 +257,10 @@ def get_host_main(base_dir, machine_name):
         machine_infos = json.load(fin)
     print(machine_infos[machine_name]['dns'])
 
-def get_service_host_main(base_dir, service_name, is_ip):
+def get_service_host_main(base_dir, service_name, is_ip, use_cloudlab_instances):
     if not os.path.exists(os.path.join(base_dir, 'machines.json')):
         raise Exception('Machines not started')
-    with open(os.path.join(base_dir, 'config.json')) as fin:
+    with open(os.path.join(base_dir, 'config.json' if not use_cloudlab_instances else 'cloudlabConfig.json')) as fin:
         config = json.load(fin)
     with open(os.path.join(base_dir, 'machines.json')) as fin:
         machine_infos = json.load(fin)
@@ -298,10 +300,10 @@ def get_all_server_hosts_main(base_dir):
         if machine_info['role'] != 'client':
             print(machine_info['dns'])
 
-def get_machine_with_label_main(base_dir, label):
+def get_machine_with_label_main(base_dir, label, use_cloudlab_instances):
     if not os.path.exists(os.path.join(base_dir, 'machines.json')):
         raise Exception('Machines not started')
-    with open(os.path.join(base_dir, 'config.json')) as fin:
+    with open(os.path.join(base_dir, 'config.json' if not use_cloudlab_instances else 'cloudlabConfig.json')) as fin:
         config = json.load(fin)
     with open(os.path.join(base_dir, 'machines.json')) as fin:
         machine_infos = json.load(fin)
@@ -311,13 +313,13 @@ def get_machine_with_label_main(base_dir, label):
             if label in labels or label+'=true' in labels:
                 print(machine_info['dns'])
 
-def get_container_id_main(base_dir, service_name, machine_name):
+def get_container_id_main(base_dir, service_name, machine_name, use_cloudlab_instances):
     if not os.path.exists(os.path.join(base_dir, 'machines.json')):
         raise Exception('Machines not started')
     with open(os.path.join(base_dir, 'machines.json')) as fin:
         machine_infos = json.load(fin)
     if machine_name is None:
-        with open(os.path.join(base_dir, 'config.json')) as fin:
+        with open(os.path.join(base_dir, 'config.json' if not use_cloudlab_instances else 'cloudlabConfig.json')) as fin:
             config = json.load(fin)
         machine_name = config['services'][service_name]['placement']
     machine_info = machine_infos[machine_name]
@@ -346,7 +348,7 @@ def collect_container_logs_main(base_dir, log_path):
             container_info = json.loads(container_info)[0]
             container_name = container_info['Name'][1:]  # remove prefix '/'
             log_stdout, log_stderr = run_remote_command(
-                machine_info['dns'], ['docker', 'container', 'logs', container_id])
+                machine_info['dns'], ['sudo', 'docker', 'container', 'logs', container_id])
             with open(os.path.join(log_path, '%s.stdout' % container_name), 'w') as fout:
                 fout.write(log_stdout)
             with open(os.path.join(log_path, '%s.stderr' % container_name), 'w') as fout:
@@ -372,11 +374,11 @@ if __name__ == '__main__':
         elif args.cmd == 'stop-machines':
             stop_machines_main(args.base_dir)
         elif args.cmd == 'generate-docker-compose':
-            generate_docker_compose_main(args.base_dir)
+            generate_docker_compose_main(args.base_dir, args.use_cloudlab_instances)
         elif args.cmd == 'get-host':
             get_host_main(args.base_dir, args.machine_name)
         elif args.cmd == 'get-service-host':
-            get_service_host_main(args.base_dir, args.service, args.ip)
+            get_service_host_main(args.base_dir, args.service, args.ip, args.use_cloudlab_instances)
         elif args.cmd == 'get-docker-manager-host':
             get_docker_manager_host_main(args.base_dir)
         elif args.cmd == 'get-client-host':
@@ -384,9 +386,9 @@ if __name__ == '__main__':
         elif args.cmd == 'get-all-server-hosts':
             get_all_server_hosts_main(args.base_dir)
         elif args.cmd == 'get-machine-with-label':
-            get_machine_with_label_main(args.base_dir, args.machine_label)
+            get_machine_with_label_main(args.base_dir, args.machine_label, args.use_cloudlab_instances)
         elif args.cmd == 'get-container-id':
-            get_container_id_main(args.base_dir, args.service, args.machine_name)
+            get_container_id_main(args.base_dir, args.service, args.machine_name, args.use_cloudlab_instances)
         elif args.cmd == 'collect-container-logs':
             collect_container_logs_main(args.base_dir, args.log_path)
         else:

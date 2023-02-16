@@ -1,0 +1,8 @@
+[
+    {
+        "funcName": "worker",
+        "funcId": 10,
+        "minWorkers": 4,
+        "maxWorkers": 32
+    }
+]
