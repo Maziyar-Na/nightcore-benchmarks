@@ -7,7 +7,7 @@ QPS=$2
 
 SRC_DIR=$ROOT_DIR/workloads/HipsterShop
 HELPER_SCRIPT=$ROOT_DIR/scripts/exp_helper
-WRK_BIN=/mnt/serverless/nightcore-benchmarks/misc/wrk2/wrk
+WRK_BIN=$ROOT_DIR/misc/wrk2/wrk
 WRK_SCRIPT=mixed_api.lua
 
 MANAGER_HOST=`$HELPER_SCRIPT get-docker-manager-host --base-dir=$BASE_DIR`
