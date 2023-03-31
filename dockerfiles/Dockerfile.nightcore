@@ -1,24 +1,18 @@
-FROM ubuntu:focal as builder
-ENV TZ=America/Denver
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-RUN apt update && apt install -y tzdata
+FROM ubuntu:bionic as builder
 RUN apt update && apt upgrade -y && \
-    apt install -y build-essential cmake wget python3-dev
+    apt install -y build-essential cmake wget
 
 WORKDIR /nightcore
 COPY . .
 RUN ./build_deps.sh && make -j $(nproc)
-RUN cd worker/python && make -j $(nproc)
 
-FROM ubuntu:focal as release
+FROM ubuntu:bionic as release
 
 COPY . /src/nightcore
 
 COPY --from=builder /nightcore/bin/release/gateway         /nightcore/gateway
 COPY --from=builder /nightcore/bin/release/engine          /nightcore/engine
 COPY --from=builder /nightcore/bin/release/launcher        /nightcore/launcher
-COPY --from=builder /nightcore/worker/python               /nightcore/worker/python
 COPY --from=builder /nightcore/bin/release/func_worker_v1  /nightcore/func_worker_v1
 
 WORKDIR /nightcore

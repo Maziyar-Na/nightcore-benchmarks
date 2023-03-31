@@ -1,0 +1,13 @@
+{
+    "machines": {
+        "nightcore-hs-middle": { "instance_id": "11", "role": "worker", "dns": "maziyar@ms1229.utah.cloudlab.us", "ip": "10.10.1.1" },
+        "nightcore-hs-front": { "instance_id": "44", "role": "manager", "dns": "maziyar@ms1208.utah.cloudlab.us", "ip": "10.10.1.6" }
+    },
+    "services": {
+        "torch-wrk1": { "placement": "nightcore-hs-middle" },
+        "torch-wrk2": { "placement": "nightcore-hs-middle" },
+        "torch-master": { "placement": "nightcore-hs-middle" },
+        "nightcore-engine": { "placement": "nightcore-hs-middle" },
+        "nightcore-gateway": { "placement": "nightcore-hs-front" }
+    }
+}
