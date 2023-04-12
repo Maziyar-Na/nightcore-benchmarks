@@ -42,7 +42,7 @@ services:
       - common.env
     command: 'python3 -u /app/resnet-master.py'
   torch-wrk1:
-    image: maziyarnz/nightcore-dnn:pytorch-worker1
+    image: maziyarnz/nightcore-dnn:pytorch-mutualworker
     command:
       - --func_id=1
       - --root_path_for_ipc=/tmp/nightcore/ipc
@@ -59,7 +59,7 @@ services:
       - nightcore-engine
       - torch-master
   torch-wrk2:
-    image: maziyarnz/nightcore-dnn:pytorch-worker2
+    image: maziyarnz/nightcore-dnn:pytorch-mutualworker
     command:
       - --func_id=2
       - --root_path_for_ipc=/tmp/nightcore/ipc

@@ -218,8 +218,26 @@ def handler_factory(func_name):
 
         return input_ + ', Foo\n'.encode()
 
+    async def bar_handler(ctx, input_):
+        # bar_output = await ctx.invoke_func('Bar', input_)
+        dict_str = input_.decode("UTF-8")
+        mydata = ast.literal_eval(dict_str)
+        sys.stderr.write('rank: {}\n'.format(mydata['rank']))
+
+        rank = int(mydata['rank'])
+        world_size = 3
+        num_split = 1
+
+        tik = time.time()
+        run_worker(rank, world_size, num_split)
+        tok = time.time()
+
+        return input_ + ', bar\n'.encode()
+
     if func_name == 'wrk1':
         return foo_handler
+    elif func_name == 'wrk2':
+        return bar_handler
     else:
         sys.stderr.write('Unknown function: {}\n'.format(func_name))
         sys.exit(1)
