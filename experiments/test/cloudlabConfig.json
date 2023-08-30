@@ -1,0 +1,39 @@
+{
+    "machines": {
+        "dnn-master-node": {
+            "dns": "maziyar@apt027.apt.emulab.net",
+            "instance_id": "99",
+            "ip": "192.168.6.7",
+            "role": "worker"
+        },
+        "nightcore-hs-front": {
+            "dns": "maziyar@apt025.apt.emulab.net",
+            "instance_id": "44",
+            "ip": "192.168.6.8",
+            "role": "manager"
+        },
+        "nightcore-hs-middle": {
+            "dns": "maziyar@apt026.apt.emulab.net",
+            "instance_id": "11",
+            "ip": "192.168.6.9",
+            "role": "worker"
+        }
+    },
+    "services": {
+        "nightcore-engine": {
+            "placement": "nightcore-hs-middle"
+        },
+        "nightcore-gateway": {
+            "placement": "nightcore-hs-front"
+        },
+        "torch-master": {
+            "placement": "dnn-master-node"
+        },
+        "torch-wrk0": {
+            "placement": "nightcore-hs-middle"
+        },
+        "torch-wrk1": {
+            "placement": "nightcore-hs-middle"
+        }
+    }
+}

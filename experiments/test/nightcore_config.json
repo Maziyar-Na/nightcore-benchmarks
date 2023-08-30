@@ -1,0 +1,14 @@
+[
+    {
+        "funcId": 1,
+        "funcName": "wrk0",
+        "maxWorkers": 32,
+        "minWorkers": 8
+    },
+    {
+        "funcId": 2,
+        "funcName": "wrk1",
+        "maxWorkers": 32,
+        "minWorkers": 8
+    }
+]
