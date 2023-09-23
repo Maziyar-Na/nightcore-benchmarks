@@ -65,6 +65,7 @@ for ((c=1; c<=$3; c++))
 do
     worker="wrk$((c-1))"
     curl -X POST -d "{'rank':$c}" "http://$ENTRY_HOST_IP:8080/function/$worker" &
+    echo "[INFO] request sent to worker $worker"
 done
 
 sleep $2
