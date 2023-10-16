@@ -1,0 +1,113 @@
+services:
+  nightcore-engine:
+    depends_on:
+    - nightcore-gateway
+    entrypoint:
+    - /nightcore/engine
+    - --gateway_addr=nightcore-gateway
+    - --root_path_for_ipc=/tmp/nightcore/ipc
+    - --func_config_file=/tmp/nightcore/func_config.json
+    - --num_io_workers=1
+    - --gateway_conn_per_worker=32
+    - --disable_monitor
+    - --instant_rps_p_norm=0.8
+    environment:
+    - FAAS_CGROUP_FS_ROOT=/tmp/root_cgroupfs
+    image: zjia/nightcore:asplos-ae
+    volumes:
+    - /mnt/inmem/nightcore:/tmp/nightcore
+    - /sys/fs/cgroup:/tmp/root_cgroupfs
+  nightcore-gateway:
+    entrypoint:
+    - /nightcore/gateway
+    - --listen_addr=0.0.0.0
+    - --http_port=8080
+    - --grpc_port=50051
+    - --func_config_file=/tmp/nightcore/func_config.json
+    - --num_io_workers=4
+    - --max_running_requests=48
+    - --lb_pick_least_load
+    image: zjia/nightcore:asplos-ae
+    ports:
+    - 8080:8080
+    volumes:
+    - /tmp/nightcore_config.json:/tmp/nightcore/func_config.json
+  torch-master:
+    command: python3 -u /app/master.py
+    env_file:
+    - common.env
+    environment:
+    - RANK=0
+    hostname: torch-master
+    image: maziyarnz/nc-mnist-redis:master-image
+  torch-wrk0:
+    command: python3 -u /app/master.py
+    env_file:
+    - common.env
+    environment:
+    - RANK=1
+    image: maziyarnz/nc-mnist-redis:master-image
+  torch-wrk1:
+    command: python3 -u /app/master.py
+    env_file:
+    - common.env
+    environment:
+    - RANK=2
+    image: maziyarnz/nc-mnist-redis:master-image
+  torch-wrk2:
+    command: python3 -u /app/master.py
+    env_file:
+    - common.env
+    environment:
+    - RANK=3
+    image: maziyarnz/nc-mnist-redis:master-image
+  torch-wrk3:
+    command: python3 -u /app/master.py
+    env_file:
+    - common.env
+    environment:
+    - RANK=4
+    image: maziyarnz/nc-mnist-redis:master-image
+  torch-wrk4:
+    command: python3 -u /app/master.py
+    env_file:
+    - common.env
+    environment:
+    - RANK=5
+    image: maziyarnz/nc-mnist-redis:master-image
+  torch-wrk5:
+    command: python3 -u /app/master.py
+    env_file:
+    - common.env
+    environment:
+    - RANK=6
+    image: maziyarnz/nc-mnist-redis:master-image
+  torch-wrk6:
+    command: python3 -u /app/master.py
+    env_file:
+    - common.env
+    environment:
+    - RANK=7
+    image: maziyarnz/nc-mnist-redis:master-image
+  torch-wrk7:
+    command: python3 -u /app/master.py
+    env_file:
+    - common.env
+    environment:
+    - RANK=8
+    image: maziyarnz/nc-mnist-redis:master-image
+  torch-wrk8:
+    command: python3 -u /app/master.py
+    env_file:
+    - common.env
+    environment:
+    - RANK=9
+    image: maziyarnz/nc-mnist-redis:master-image
+  torch-wrk9:
+    command: python3 -u /app/master.py
+    env_file:
+    - common.env
+    environment:
+    - RANK=10
+    image: maziyarnz/nc-mnist-redis:master-image
+version: '3.8'
